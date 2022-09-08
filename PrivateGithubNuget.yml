@@ -1,0 +1,14 @@
+name: publish to nuget
+on:
+  push:
+    branches:
+      - master # set to your top level branch or branches
+jobs:
+  call-workflow:
+    uses: colemanwm/workflows/.github/workflows/PushToPrivateNuget.yml@v1
+    with:
+      ProjectName: ".csproj"
+      ProjectFolder: ""
+    secrets:
+      # This should be defined on the repo that is being pushed to the nuget feed in github, as a secret
+      NUGET_TOKEN: ${{secrets.NUGET_AUTH_TOKEN}}

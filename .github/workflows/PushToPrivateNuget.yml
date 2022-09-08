@@ -1,0 +1,52 @@
+name: 'Build, Pack, Push'
+on:
+  workflow_call:
+    inputs:
+      ProjectName:
+        required: true
+        type: string
+      ProjectFolder:
+        required: true
+        type: string
+    secrets:
+      NUGET_TOKEN:
+        required: true
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_NOLOGO: true
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    environment: Nuget
+    env:
+        CONFIG : Release
+        NUGET_URL: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+        NUGET_TOKEN : ${{ secrets.NUGET_TOKEN }}
+        USERNAME : someusername
+        SLN: "{{inputs.SlnPath}}"
+        PROJECT : "${{ inputs.ProjectName }}"
+        PROJECT_FOLDER : "${{ inputs.ProjectFolder }}"
+    steps:
+      -
+        name: Checkout Dashboard
+        uses: actions/checkout@v2
+      -
+        name: Build
+        run: |
+          dotnet nuget add source --username ${{env.USERNAME}} --password ${{ env.NUGET_TOKEN }} --store-password-in-clear-text --name github ${{env.NUGET_URL}}
+          dotnet build \
+            "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
+            --configuration ${{ env.CONFIG }}
+      -
+        name: NuGet Pack
+        run: |
+          dotnet pack "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
+              --configuration ${{ env.CONFIG }} \
+              --no-build
+      -
+        name: NuGet Push
+        run: |
+            dotnet nuget push "${{ env.PROJECT_FOLDER }}/bin/Release/*.nupkg" \
+              --source ${{ env.NUGET_URL }} \
+              --api-key ${{ env.NUGET_TOKEN }} \
+              --skip-duplicate
