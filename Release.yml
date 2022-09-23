@@ -1,0 +1,18 @@
+name: Create Release From Tag
+on:
+  push:
+    tags: # Define the tag pattern to match here
+      - "v*"
+jobs:
+  call-workflow:
+    uses: colemanwm/workflows/.github/workflows/PushToPrivateNuget.yml@v2
+    with:
+      # Folder to create the compiled project(s) in - no spaces
+      RELEASE_FOLDER: ""
+      # Name of the solution file WITHOUT EXTENSION
+      SOLUTION_NAME: ""
+      # Compilation config - Release or Debug
+      CONFIG: ""
+    secrets:
+      # This should be defined on the repo that is being pushed to the nuget feed in github, as a secret
+      NUGET_TOKEN: ${{secrets.NUGET_AUTH_TOKEN}}
