@@ -1,0 +1,69 @@
+name: 'Build, Zip, Release'
+on:
+  workflow_call:
+    inputs:
+      RELEASE_FOLDER:
+        required: true
+        type: string
+      SOLUTION_NAME:
+        required: true
+        type: string
+      CONFIG:
+        required: true
+        type: string
+    secrets:
+      NUGET_TOKEN:
+        required: true
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_NOLOGO: true
+jobs:
+  tagged-release:
+    name: "Tagged Release"
+    runs-on: "windows-latest"
+    environment: Release
+    env:
+      CONFIG : ${{ inputs.CONFIG }}
+      NUGET_URL: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+      NUGET_TOKEN : ${{ secrets.NUGET_TOKEN }}
+      USERNAME : someusername
+      SOLUTION_NAME: "${{ inputs.SOLUTION_NAME }}"
+      RELEASE_FOLDER: "${{ inputs.RELEASE_FOLDER }}"
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+        
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Setup Nuget
+        uses: Nuget/setup-nuget@v1.0.5
+
+      - name: Restore nuget packages
+        run: |
+          nuget sources Add -Name "github" -source ${{env.NUGET_URL}} -username ${{env.USERNAME}} -password ${{ env.NUGET_TOKEN }} -StorePasswordInClearText
+          nuget restore "${{ env.SOLUTION_NAME }}.sln"
+          
+      - name: "Build"
+        run: |
+          get-childitem -Recurse -Filter *.csproj | foreach-object {
+            echo "Project: $_"
+            $Parent = (Get-Item(Split-Path "$_")).Name
+            echo "Project Output Folder: $Parent"
+            msbuild "$_" /p:Configuration=${{ env.CONFIG }} /p:OutputPath="${{ github.workspace }}\${{ env.RELEASE_FOLDER }}\$Parent"
+          }
+      
+      - name: Easy Zip Files
+        uses: vimtor/action-zip@v1
+        with:
+          files: ${{ env.RELEASE_FOLDER }}
+          recursive: true
+          dest: ${{ env.RELEASE_FOLDER }}.zip
+          
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          title: "${{ env.SOLUTION_NAME }}-Release ${{ github.ref_name }}"
+          prerelease: false
+          files: |
+            ${{ env.RELEASE_FOLDER }}.zip
