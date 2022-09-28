@@ -5,7 +5,7 @@ on:
       - "v*"
 jobs:
   call-workflow:
-    uses: colemanwm/workflows/.github/workflows/CreateReleaseFromTag.yml@v2
+    uses: colemanwm/workflows/.github/workflows/CreateReleaseFromTag.yml@v3
     with:
       # Folder to create the compiled project(s) in - no spaces
       RELEASE_FOLDER: ""

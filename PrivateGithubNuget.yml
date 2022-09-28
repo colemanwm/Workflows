@@ -5,7 +5,7 @@ on:
       - master # set to your top level branch or branches
 jobs:
   call-workflow:
-    uses: colemanwm/workflows/.github/workflows/PushToPrivateNuget.yml@v2
+    uses: colemanwm/workflows/.github/workflows/PushToPrivateNuget.yml@v3
     with:
       ProjectName: ".csproj"
       ProjectFolder: ""
