@@ -50,3 +50,7 @@ jobs:
               --source ${{ env.NUGET_URL }} \
               --api-key ${{ env.NUGET_TOKEN }} \
               --skip-duplicate
+            dotnet nuget push "${{ env.PROJECT_FOLDER }}/bin/Release/*.snupkg" \
+              --source ${{ env.NUGET_URL }} \
+              --api-key ${{ env.NUGET_TOKEN }} \
+              --skip-duplicate
