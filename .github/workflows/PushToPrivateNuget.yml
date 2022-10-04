@@ -63,4 +63,4 @@ jobs:
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           title: "${{ env.SOLUTION_NAME }}-Release ${{ github.ref_name }}"
-          prerelease: contains(${{ github.ref_name }}, "beta")
+          prerelease: ${{ contains(${{ github.ref_name }}, "beta") }}
