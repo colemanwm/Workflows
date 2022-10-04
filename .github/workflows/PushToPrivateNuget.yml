@@ -8,6 +8,9 @@ on:
       ProjectFolder:
         required: true
         type: string
+      Version:
+        required: false
+        type: string
     secrets:
       NUGET_TOKEN:
         required: true
@@ -26,6 +29,7 @@ jobs:
         SLN: "{{inputs.SlnPath}}"
         PROJECT : "${{ inputs.ProjectName }}"
         PROJECT_FOLDER : "${{ inputs.ProjectFolder }}"
+        VERSION : "${{ inputs.Version }}"
     steps:
       -
         name: Checkout Dashboard
@@ -42,7 +46,8 @@ jobs:
         run: |
           dotnet pack "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
               --configuration ${{ env.CONFIG }} \
-              --no-build
+              --no-build \
+              --version-suffix ${{ env.VERSION }}
       -
         name: NuGet Push
         run: |

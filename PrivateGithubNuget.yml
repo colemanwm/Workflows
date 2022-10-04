@@ -1,8 +1,8 @@
 name: publish to nuget
 on:
   push:
-    branches:
-      - master # set to your top level branch or branches
+    tags:
+      - v*
 jobs:
   call-workflow:
     uses: colemanwm/workflows/.github/workflows/PushToPrivateNuget.yml@v3
