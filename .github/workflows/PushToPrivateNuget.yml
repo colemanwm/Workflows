@@ -63,5 +63,5 @@ jobs:
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          title: "${{ env.SOLUTION_NAME }}-Release ${{ github.ref_name }}"
+          title: "${{ github.ref_name }}"
           prerelease: ${{ env.PRERELEASE }}
