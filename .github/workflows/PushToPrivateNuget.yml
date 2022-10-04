@@ -11,7 +11,7 @@ on:
       Version:
         required: false
         type: string
-      Prelease:
+      Prerelease:
         required: true
         type: boolean
     secrets:
@@ -33,7 +33,7 @@ jobs:
         PROJECT : "${{ inputs.ProjectName }}"
         PROJECT_FOLDER : "${{ inputs.ProjectFolder }}"
         VERSION : "${{ inputs.Version }}"
-        PRELEASE : "${{ inputs.Prelease }}"
+        PRERELEASE : "${{ inputs.Prerelease }}"
     steps:
       -
         name: Checkout Dashboard
