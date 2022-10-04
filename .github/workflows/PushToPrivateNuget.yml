@@ -11,6 +11,9 @@ on:
       Version:
         required: false
         type: string
+      Prelease:
+        required: true
+        type: boolean
     secrets:
       NUGET_TOKEN:
         required: true
@@ -30,6 +33,7 @@ jobs:
         PROJECT : "${{ inputs.ProjectName }}"
         PROJECT_FOLDER : "${{ inputs.ProjectFolder }}"
         VERSION : "${{ inputs.Version }}"
+        PRELEASE : "${{ inputs.Prelease }}"
     steps:
       -
         name: Checkout Dashboard
@@ -59,3 +63,8 @@ jobs:
               --source ${{ env.NUGET_URL }} \
               --api-key ${{ env.NUGET_TOKEN }} \
               --skip-duplicate
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          title: "${{ env.SOLUTION_NAME }}-Release ${{ github.ref_name }}"
+          prerelease: ${{ env.PRERELEASE }}
