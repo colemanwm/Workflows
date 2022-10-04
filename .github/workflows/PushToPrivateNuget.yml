@@ -30,7 +30,7 @@ jobs:
         PROJECT : "${{ inputs.ProjectName }}"
         PROJECT_FOLDER : "${{ inputs.ProjectFolder }}"
         VERSION : "${{ inputs.Version }}"
-        PRERELEASE : ${{ contains(${{ github.ref_name }}, 'beta') }}
+        PRERELEASE : ${{ contains(github.ref_name, 'beta') }}
     steps:
       -
         name: Checkout Dashboard
