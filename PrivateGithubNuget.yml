@@ -5,7 +5,7 @@ on:
       - v*
 jobs:
   call-workflow:
-    uses: colemanwm/workflows/.github/workflows/PushToPrivateNuget.yml@v3
+    uses: colemanwm/workflows/.github/workflows/PushToPrivateNuget.yml@main
     with:
       ProjectName: ".csproj"
       ProjectFolder: ""
