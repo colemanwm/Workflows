@@ -30,6 +30,7 @@ jobs:
         PROJECT : "${{ inputs.ProjectName }}"
         PROJECT_FOLDER : "${{ inputs.ProjectFolder }}"
         VERSION : "${{ inputs.Version }}"
+        VersionCodeFormatted : "${{ inputs.Version }}"
         PRERELEASE : ${{ contains(github.ref_name, 'beta') }}
     steps:
       -
@@ -44,13 +45,13 @@ jobs:
         env:
           VersionCode: ${{ env.VERSION }}
       -
-        run: echo ${{steps.GetVersionCode.outputs.VersionCodeFormatted}}
+        run: echo ${{ env.VersionCodeFormatted }}
       -
         name: Build
         run: |
           dotnet nuget add source --username ${{env.USERNAME}} --password ${{ env.NUGET_TOKEN }} --store-password-in-clear-text --name github ${{env.NUGET_URL}}
           dotnet build \
-            /p:Version=${{ VersionCodeFormatted }}
+            /p:Version=${{ env.VersionCodeFormatted }}
             "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
             --configuration 
       -
