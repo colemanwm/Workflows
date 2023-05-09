@@ -38,10 +38,6 @@ jobs:
       -
         name: Build
         run: |
-          #dotnet nuget add source --username ${{env.USERNAME}} --password ${{ env.NUGET_TOKEN }} --store-password-in-clear-text --name github ${{env.NUGET_URL}}
-          #dotnet build \
-          #  "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
-          #  --configuration ${{ env.CONFIG }}
           cd ${{ env.PROJECT_FOLDER }}
           msbuild /p:RestoreAdditionalProjectSources=${{env.NUGET_URL}}
       -
@@ -49,10 +45,6 @@ jobs:
         run: |
           cd ${{ env.PROJECT_FOLDER }}
           msbuild -t:pack
-          #dotnet pack "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
-          #    --configuration ${{ env.CONFIG }} \
-          #    --no-build \
-          #    --version-suffix ${{ env.VERSION }}
       -
         name: NuGet Push
         run: |
