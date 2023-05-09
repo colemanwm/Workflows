@@ -40,7 +40,7 @@ jobs:
         run:
           UnformattedVersionCode="${{ env.VERSION }}"
           Formatted="${UnformattedVersionCode/v/""}"
-          echo "{VersionCodeFormatted}={$Formatted}" >> $GITHUB_ENV
+          echo "{VersionCodeFormatted}={{$Formatted}}" >> $GITHUB_ENV
       -
         run: echo "${{ env.VersionCodeFormatted }}"
       -
