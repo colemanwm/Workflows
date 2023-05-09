@@ -44,15 +44,11 @@ jobs:
         name: NuGet Pack
         run: |
           cd ${{ env.PROJECT_FOLDER }}
-          msbuild -t:pack
+          msbuild -t:pack /p:Configuration=Release
       -
         name: NuGet Push
         run: |
             dotnet nuget push "${{ env.PROJECT_FOLDER }}/bin/Release/*.nupkg" \
-              --source ${{ env.NUGET_URL }} \
-              --api-key ${{ env.NUGET_TOKEN }} \
-              --skip-duplicate
-            dotnet nuget push "${{ env.PROJECT_FOLDER }}/bin/Release/*.snupkg" \
               --source ${{ env.NUGET_URL }} \
               --api-key ${{ env.NUGET_TOKEN }} \
               --skip-duplicate
