@@ -40,37 +40,6 @@ jobs:
         run:
           UnformattedVersionCode="${{ env.VERSION }}"
           Formatted="${UnformattedVersionCode/v/""}"
-          echo "{VersionCodeFormatted}={{$Formatted}}" >> $GITHUB_ENV
+          echo "{VersionCodeFormatted}="{$Formatted} >> $GITHUB_ENV
       -
         run: echo "${{ env.VersionCodeFormatted }}"
-      -
-        name: Build
-        run: |
-          dotnet nuget add source --username ${{env.USERNAME}} --password ${{ env.NUGET_TOKEN }} --store-password-in-clear-text --name github ${{env.NUGET_URL}}
-          dotnet build \
-            /p:Version=${{ env.VersionCodeFormatted }}
-            "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
-            --configuration 
-      -
-        name: NuGet Pack
-        run: |
-          dotnet pack "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
-              --configuration ${{ env.CONFIG }} \
-              --no-build \
-              --version-suffix ${{ env.VERSION }}
-      -
-        name: NuGet Push
-        run: |
-            dotnet nuget push "${{ env.PROJECT_FOLDER }}/bin/Release/*.nupkg" \
-              --source ${{ env.NUGET_URL }} \
-              --api-key ${{ env.NUGET_TOKEN }} \
-              --skip-duplicate
-            dotnet nuget push "${{ env.PROJECT_FOLDER }}/bin/Release/*.snupkg" \
-              --source ${{ env.NUGET_URL }} \
-              --api-key ${{ env.NUGET_TOKEN }} \
-              --skip-duplicate
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          title: "${{ github.ref_name }}"
-          prerelease: ${{ env.PRERELEASE }}
