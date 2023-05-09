@@ -26,20 +26,16 @@ jobs:
         NUGET_URL: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
         NUGET_TOKEN : ${{ secrets.NUGET_TOKEN }}
         USERNAME : someusername
-        SLN: "{{inputs.SlnPath}}"
         PROJECT : "${{ inputs.ProjectName }}"
         PROJECT_FOLDER : "${{ inputs.ProjectFolder }}"
         VERSION : "${{ inputs.Version }}"
         PRERELEASE : ${{ contains(github.ref_name, 'beta') }}
     steps:
       -
-        name: Checkout Dashboard
-        uses: actions/checkout@v2
-      -
         id: GetVersionCode
         run:
-          UnformattedVersionCode="${{ env.VERSION }}"
-          Formatted="$"{UnformattedVersionCode/v/"""}"
-          echo {VersionCodeFormatted}="{"${Formatted}"}" >> $GITHUB_ENV
+          UnformattedVersionCode=${"${{ env.VERSION }}"/v/t}
+          echo ${"${{ env.VERSION }}"/v/t}
+          echo {VersionCodeFormatted}=1.0.0 >> $GITHUB_ENV
       -
         run: echo "${{ env.VersionCodeFormatted }}"
