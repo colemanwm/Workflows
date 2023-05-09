@@ -39,7 +39,7 @@ jobs:
         name: Build
         run: |
           cd ${{ env.PROJECT_FOLDER }}
-          msbuild /p:RestoreAdditionalProjectSources=${{env.NUGET_URL}}
+          msbuild -t:restore /p:RestoreAdditionalProjectSources=${{env.NUGET_URL}}
       -
         name: NuGet Pack
         run: |
