@@ -38,7 +38,7 @@ jobs:
       -
         id: GetVersionCode
         run:
-          UnformattedVersionCode="${v.VersionCode}"
+          UnformattedVersionCode="${VersionCode}"
           Formatted="${UnformattedVersionCode//v/}"
           echo "::set-output name=VersionCodeFormatted::$Formatted"
         env:
