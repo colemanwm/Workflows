@@ -38,4 +38,4 @@ jobs:
           #echo {VersionCodeFormatted}=1.0.0 >> $GITHUB_ENV
           echo "{FormattedCode}={${{ env.VERSION }}}" | sed -e "s/v//" >> $GITHUB_ENV
       -
-        run: echo "${{ env.FormattedCode }}"
+        run: echo "${FormattedCode}"
