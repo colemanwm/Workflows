@@ -40,7 +40,8 @@ jobs:
         run:
           UnformattedVersionCode="${VersionCode}"
           Formatted="${UnformattedVersionCode//v/}"
-          echo "::set-output name=VersionCodeFormatted::$Formatted"
+          echo "{VersionCodeFormatted}={$Formatted}" >> $GITHUB_OUTPUT
+          #echo "::set-output name=VersionCodeFormatted::$Formatted"
         env:
           VersionCode: ${{ env.VERSION }}
       -
@@ -49,9 +50,8 @@ jobs:
         name: Build
         run: |
           dotnet nuget add source --username ${{env.USERNAME}} --password ${{ env.NUGET_TOKEN }} --store-password-in-clear-text --name github ${{env.NUGET_URL}}
-          buildVersion='${{ env.VERSION }}' | tr 'v' ''
           dotnet build \
-            /p:Version=${{ env.VERSION }}
+            /p:Version=${{ VersionCodeFormatted }}
             "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
             --configuration 
       -
