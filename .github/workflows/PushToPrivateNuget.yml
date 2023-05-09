@@ -30,7 +30,6 @@ jobs:
         PROJECT : "${{ inputs.ProjectName }}"
         PROJECT_FOLDER : "${{ inputs.ProjectFolder }}"
         VERSION : "${{ inputs.Version }}"
-        #VersionCodeFormatted : "${{ inputs.Version }}"
         PRERELEASE : ${{ contains(github.ref_name, 'beta') }}
     steps:
       -
@@ -45,7 +44,7 @@ jobs:
         env:
           VersionCode: ${{ env.VERSION }}
       -
-        run: echo ${{ env.VersionCodeFormatted }}
+        run: echo "${{ env.VersionCodeFormatted }}"
       -
         name: Build
         run: |
