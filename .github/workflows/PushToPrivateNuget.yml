@@ -44,10 +44,11 @@ jobs:
         name: Build
         run: |
           dotnet nuget add source --username ${{env.USERNAME}} --password ${{ env.NUGET_TOKEN }} --store-password-in-clear-text --name github ${{env.NUGET_URL}}
-          dotnet build \
-            /p:Version=${{ env.FormattedCode }}
-            "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
-            --configuration ${{ env.CONFIG }}
+          dotnet build "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" --configuration ${{ env.CONFIG }}
+          # dotnet build \
+          #  /p:Version=${{ env.FormattedCode }}
+           # "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
+           # --configuration ${{ env.CONFIG }}
       -
         name: NuGet Pack
         run: |
