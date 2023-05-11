@@ -34,9 +34,10 @@ jobs:
       -
         id: GetVersionCode
         run:
-          #UnformattedVersionCode=${"${{ env.VERSION }}"/v/t}
-          #echo {VersionCodeFormatted}=1.0.0 >> $GITHUB_ENV
           echo "FormattedCode=${{ env.VERSION }}" | sed -e "s/v//" >> "$GITHUB_ENV"
+      -
+        id: GetProjectCode
+        run:
           echo "FormattedProject=${{ env.PROJECT }}" | sed -e "s/ //" | sed -e "s/.csproj//" >> "$GITHUB_ENV"
       -
         name: Checkout Dashboard
