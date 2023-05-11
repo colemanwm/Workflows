@@ -37,6 +37,7 @@ jobs:
           #UnformattedVersionCode=${"${{ env.VERSION }}"/v/t}
           #echo {VersionCodeFormatted}=1.0.0 >> $GITHUB_ENV
           echo "FormattedCode=${{ env.VERSION }}" | sed -e "s/v//" >> "$GITHUB_ENV"
+          echo "FormattedProject=${{ env.PROJECT }}" | sed -e "s/ //" | sed -e "s/.csproj//" >> "$GITHUB_ENV"
       -
         name: Checkout Dashboard
         uses: actions/checkout@v2
@@ -53,6 +54,7 @@ jobs:
         name: NuGet Pack
         run: |
           dotnet pack "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
+              /p:PackageId=${{ env.FormattedProject }} \
               --configuration ${{ env.CONFIG }} \
               --no-build \
               --version-suffix ${{ env.FormattedCode }}
