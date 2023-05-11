@@ -55,7 +55,7 @@ jobs:
           dotnet pack "${{ env.PROJECT_FOLDER }}/${{ env.PROJECT }}" \
               --configuration ${{ env.CONFIG }} \
               --no-build \
-              --version-suffix ${{ env.VERSION }}
+              --version-suffix ${{ env.FormattedCode }}
       -
         name: NuGet Push
         run: |
