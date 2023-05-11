@@ -7,11 +7,22 @@ Currently this repo contains the public Workflow task for pushing to an organiza
 To use:
   The project must have the following properties defined in the csproj file, in the PropertyGroup tag:
   
-    <RepositoryUrl>[URL to the github repo]</RepositoryUrl>
+   
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     
-    <PackageId>[package id for nuget - no spaces]</PackageId>
+    <Version>$(VersionSuffix)</Version>
     
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Authors>Coleman Worldwide Moving</Authors>
+    
+    <Company>Coleman Worldwide Moving</Company>
+    
+    <PackageProjectUrl>[repo url]</PackageProjectUrl>
+    
+    <RepositoryUrl>[repo url]</RepositoryUrl>
+    
+    <RepositoryType>git</RepositoryType>
+    
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     
     <IncludeSymbols>true</IncludeSymbols>
     
