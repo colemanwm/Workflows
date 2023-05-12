@@ -11,6 +11,9 @@ on:
       Version:
         required: false
         type: string
+      PackageID:
+        required: false
+        type: string
     secrets:
       NUGET_TOKEN:
         required: true
@@ -28,6 +31,7 @@ jobs:
         USERNAME : someusername
         PROJECT : "${{ inputs.ProjectName }}"
         PROJECT_FOLDER : "${{ inputs.ProjectFolder }}"
+        PACKAGE_ID : "${{ inputs.PackageID }}"
         VERSION : "${{ inputs.Version }}"
         PRERELEASE : ${{ contains(github.ref_name, 'beta') }}
     steps:
@@ -36,9 +40,15 @@ jobs:
         run:
           echo "FormattedCode=${{ env.VERSION }}" | sed -e "s/v//" >> "$GITHUB_ENV"
       -
-        id: GetProjectCode
+        id: GetProjectID1
+        if: env.PACKAGE_ID == null
         run:
-          echo "FormattedProject=${{ env.PROJECT }}" | sed -e "s/ //" | sed -e "s/.csproj//" >> "$GITHUB_ENV"
+          echo "FormattedProject=${{ env.PROJECT }}" | sed -e "s/ /-/" | sed -e "s/.csproj//" >> "$GITHUB_ENV"
+      -
+        id: GetProjectID2
+        if: env.PACKAGE_ID != null
+        run:
+          echo "FormattedProject=${{ env.PACKAGE_ID }}" >> "$GITHUB_ENV"
       -
         name: Checkout Dashboard
         uses: actions/checkout@v2
