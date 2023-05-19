@@ -7,8 +7,10 @@ jobs:
   call-workflow:
     uses: colemanwm/workflows/.github/workflows/PushToPrivateNuget.yml@main
     with:
-      ProjectName: ".csproj"
-      ProjectFolder: ""
+      ProjectName: ".csproj" # Name of the csproj file you want to turn into a nuget package
+      ProjectFolder: "" # Folder the project is located in
+      Version: "${{github.ref_name}}" # leave this alone, it'll use the tag name automatically
+      PackageID: "" # Package ID for nuget - no spaces
     secrets:
       # This should be defined on the repo that is being pushed to the nuget feed in github, as a secret
       NUGET_TOKEN: ${{secrets.NUGET_AUTH_TOKEN}}
