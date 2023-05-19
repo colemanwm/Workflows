@@ -32,13 +32,13 @@ jobs:
         PROJECT : "${{ inputs.ProjectName }}"
         PROJECT_FOLDER : "${{ inputs.ProjectFolder }}"
         PACKAGE_ID : "${{ inputs.PackageID }}"
-        VERSION : "${{ inputs.Version }}"
+        P_VERSION : "${{ inputs.Version }}"
         PRERELEASE : ${{ contains(github.ref_name, 'beta') }}
     steps:
       -
         id: GetVersionCode
         run:
-          echo "FormattedCode=${{ env.VERSION }}" | sed -e "s/v//" >> "$GITHUB_ENV"
+          echo "FormattedCode=${{ env.P_VERSION }}" | sed -e "s/v//" >> "$GITHUB_ENV"
       -
         id: GetProjectID1
         if: env.PACKAGE_ID == null
