@@ -69,7 +69,7 @@ jobs:
               --configuration ${{ env.CONFIG }} \
               --no-build \
               --version-suffix ${{ env.FormattedCode }} \
-              --Symbols --SymbolPackageFormat snupkg
+              -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
       -
         name: NuGet Push
         run: |
