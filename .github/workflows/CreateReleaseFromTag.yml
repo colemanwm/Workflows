@@ -34,10 +34,10 @@ jobs:
         uses: actions/checkout@v2
         
       - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.1
+        uses: microsoft/setup-msbuild@v2
 
       - name: Setup Nuget
-        uses: Nuget/setup-nuget@latest
+        uses: Nuget/setup-nuget@v2
 
       - name: Restore nuget packages
         run: |
