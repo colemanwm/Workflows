@@ -37,7 +37,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1.1
 
       - name: Setup Nuget
-        uses: Nuget/setup-nuget@v1.0.5
+        uses: Nuget/setup-nuget@latest
 
       - name: Restore nuget packages
         run: |
