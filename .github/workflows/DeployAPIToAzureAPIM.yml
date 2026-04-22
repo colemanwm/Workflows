@@ -23,9 +23,6 @@ on:
       APP_ID:
         required: true
         type: string
-      API_VERSION_SET_ID:
-        required: true
-        type: string
       SPEC_PATH:
         required: true
         type: string
@@ -83,7 +80,6 @@ jobs:
       contents: read #This is required for actions/checkout
     env:
       API_PATH : ${{ inputs.API_PATH }}
-      API_VERSION_SET_ID : ${{ inputs.API_VERSION_SET_ID }}
       APP_ID : ${{ inputs.APP_ID }}
       APP_NAME : ${{ inputs.APP_NAME }}
       RESOURCE_GROUP : ${{ inputs.RESOURCE_GROUP }}
@@ -111,4 +107,4 @@ jobs:
           slot-name: "${{ env.SLOT_NAME }}"
           package: .
       - name: Update APIM APIs
-        run: az apim api import --resource-group "${{ env.RESOURCE_GROUP }}" --service-name "${{ env.SERVICE_NAME }}" --path "${{ env.API_PATH }}" --api-version-set-id "${{ env.API_VERSION_SET_ID }}" --specification-format OpenApiJson --specification-path "${{ env.SPEC_PATH }}" --api-id "${{ env.APP_ID }}"
+        run: az apim api import --resource-group "${{ env.RESOURCE_GROUP }}" --service-name "${{ env.SERVICE_NAME }}" --path "${{ env.API_PATH }}" --specification-format OpenApiJson --specification-path "${{ env.SPEC_PATH }}" --api-id "${{ env.APP_ID }}"
