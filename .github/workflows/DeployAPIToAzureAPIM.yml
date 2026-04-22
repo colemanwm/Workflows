@@ -17,6 +17,9 @@ on:
       API_PATH:
         required: true
         type: string
+      SLOT_NAME:
+        required: true
+        type: string
     secrets:
       NUGET_TOKEN:
         required: true
@@ -114,7 +117,7 @@ jobs:
       APP_NAME: ${{ inputs.AZ_APP_NAME }}
       RESOURCE_GROUP : ${{ inputs.RESOURCE_GROUP }}
       SERVICE_NAME : ${{ inputs.SERVICE_NAME }}
-      SLOT_NAME : ${{ needs.configure-vars.outputs.FormattedCode }}
+      SLOT_NAME : ${{ inputs.SLOT_NAME }}
       SPEC_PATH : ${{ needs.configure-vars.outputs.SpecPath }}
 
     steps:
