@@ -108,6 +108,7 @@ jobs:
     env:
       API_PATH : ${{ inputs.API_PATH }}
       APP_ID : ${{ needs.configure-vars.outputs.AppID }}
+      APP_NAME: ${{ inputs.APP_NAME }}
       RESOURCE_GROUP : ${{ inputs.RESOURCE_GROUP }}
       SERVICE_NAME : ${{ inputs.SERVICE_NAME }}
       SLOT_NAME : ${{ inputs.SLOT_NAME }}
