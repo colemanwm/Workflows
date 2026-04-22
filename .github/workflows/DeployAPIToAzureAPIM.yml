@@ -2,10 +2,10 @@ name: 'Deploy API to Azure APIM'
 on:
   workflow_call:
     inputs:
-      APP_NAME:
+      AZ_APP_NAME:
         required: true
         type: string
-      SLOT_NAME:
+      APP_NAME:
         required: true
         type: string
       RESOURCE_GROUP:
@@ -37,7 +37,7 @@ jobs:
       SpecPath: ${{ steps.storeSpecPath.outputs.SPEC_PATH }}
       AppID: ${{ steps.storeAppID.outputs.APP_ID }}
     env:
-      API_NAME: $${{ inputs.APP_NAME }}
+      APP_NAME: $${{ inputs.APP_NAME }}
     steps:
       - name: Get Version Code (env)
         run: |
@@ -45,11 +45,11 @@ jobs:
       - name: Get spec path - non-v1 handling
         if: ${{ env.FormattedCode != 'v1' }}
         run: |
-          echo "SPEC_PATH=openapi/${{ env.API_NAME }}_${{ github.ref_name }}.json" >> "$GITHUB_ENV"
+          echo "SPEC_PATH=openapi/${{ env.APP_NAME }}_${{ github.ref_name }}.json" >> "$GITHUB_ENV"
       - name: Get spec path - v1 handling
         if: ${{ env.FormattedCode == 'v1' }}
         run: |
-          echo "SPEC_PATH=openapi/${{ env.API_NAME }}.json" >> "$GITHUB_ENV"
+          echo "SPEC_PATH=openapi/${{ env.APP_NAME }}.json" >> "$GITHUB_ENV"
       - id: storeVersionCode
         name: Store Version Code
         run: |
@@ -108,10 +108,10 @@ jobs:
     env:
       API_PATH : ${{ inputs.API_PATH }}
       APP_ID : ${{ needs.configure-vars.outputs.AppID }}
-      APP_NAME: ${{ inputs.APP_NAME }}
+      APP_NAME: ${{ inputs.AZ_APP_NAME }}
       RESOURCE_GROUP : ${{ inputs.RESOURCE_GROUP }}
       SERVICE_NAME : ${{ inputs.SERVICE_NAME }}
-      SLOT_NAME : ${{ inputs.SLOT_NAME }}
+      SLOT_NAME : ${{ needs.configure-vars.outputs.FormattedCode }}
       SPEC_PATH : ${{ needs.configure-vars.outputs.SpecPath }}
 
     steps:
