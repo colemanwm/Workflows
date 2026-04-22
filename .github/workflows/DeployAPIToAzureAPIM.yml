@@ -1,0 +1,114 @@
+name: 'Deploy API to Azure APIM'
+on:
+  workflow_call:
+    inputs:
+      CONFIG:
+        required: true
+        type: string
+      APP_NAME:
+        required: true
+        type: string
+      SLOT_NAME:
+        required: true
+        type: string
+      RESOURCE_GROUP:
+        required: true
+        type: string
+      SERVICE_NAME:
+        required: true
+        type: string
+      API_PATH:
+        required: true
+        type: string
+      APP_ID:
+        required: true
+        type: string
+      API_VERSION_SET_ID:
+        required: true
+        type: string
+      SPEC_PATH:
+        required: true
+        type: string
+    secrets:
+      NUGET_TOKEN:
+        required: true
+      APIM_Client_ID:
+        required: true
+      APIM_Tenant_ID:
+        required: true
+      APIM_Subscription_ID:
+        required: true
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_NOLOGO: true
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read #This is required for actions/checkout
+    env:
+      CONFIG : ${{ inputs.CONFIG }}
+      NUGET_URL: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+          
+      - name: Restore
+        run: |
+          dotnet nuget add source ${{env.NUGET_URL}} --name "github" --username someusername --password ${{secrets.NUGET_TOKEN}}
+          dotnet restore "${{ env.WORKING_DIRECTORY }}"
+
+      - name: Build with dotnet
+        run: dotnet build --configuration Release --no-restore --property WarningLevel=1
+
+      - name: dotnet publish
+        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+    env:
+      API_PATH : ${{ inputs.API_PATH }}
+      API_VERSION_SET_ID : ${{ inputs.API_VERSION_SET_ID }}
+      APP_ID : ${{ inputs.APP_ID }}
+      APP_NAME : ${{ inputs.APP_NAME }}
+      RESOURCE_GROUP : ${{ inputs.RESOURCE_GROUP }}
+      SERVICE_NAME : ${{ inputs.SERVICE_NAME }}
+      SLOT_NAME : ${{ inputs.SLOT_NAME }}
+      SPEC_PATH : ${{ inputs.SPEC_PATH }}
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.APIM_Client_ID }}
+          tenant-id: ${{ secrets.APIM_Tenant_ID }}
+          subscription-id: ${{ secrets.APIM_Subscription_ID }}
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: "${{ env.APP_NAME }}"
+          slot-name: "${{ env.SLOT_NAME }}"
+          package: .
+      - name: Update APIM APIs
+        run: az apim api import --resource-group "${{ env.RESOURCE_GROUP }}" --service-name "${{ env.SERVICE_NAME }}" --path "${{ env.API_PATH }}" --api-version-set-id "${{ env.API_VERSION_SET_ID }}" --specification-format OpenApiJson --specification-path "${{ env.SPEC_PATH }}" --api-id "${{ env.APP_ID }}"
