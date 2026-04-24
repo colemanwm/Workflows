@@ -202,4 +202,4 @@ jobs:
           
       - name: Update APIM APIs
         if: ${{ env.SERVICE_URL != 'DEFAULT' }}
-        run: az apim api import --resource-group "${{ env.RESOURCE_GROUP }}" --service-name "${{ env.SERVICE_NAME }}" --path "${{ env.API_PATH }}" --serivce-url ${{ env.SERVICE_URL }} --specification-format OpenApiJson --specification-path "${{ env.SPEC_PATH }}" --api-id "${{ env.APP_ID }}"
+        run: az apim api import --resource-group "${{ env.RESOURCE_GROUP }}" --service-name "${{ env.SERVICE_NAME }}" --path "${{ env.API_PATH }}" --service-url ${{ env.SERVICE_URL }} --specification-format OpenApiJson --specification-path "${{ env.SPEC_PATH }}" --api-id "${{ env.APP_ID }}"
