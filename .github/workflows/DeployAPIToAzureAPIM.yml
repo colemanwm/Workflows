@@ -152,6 +152,7 @@ jobs:
 
   deploy:
     runs-on: windows-latest
+    environment: Main
     needs:
       - build
       - configure-vars
