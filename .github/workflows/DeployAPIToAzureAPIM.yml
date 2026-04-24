@@ -11,6 +11,9 @@ on:
       AZ_APP_NAME:
         required: true
         type: string
+      MAIN_SLOT_VERSION_CODE:
+        required: true
+        type: string
       RESOURCE_GROUP_DEV:
         required: true
         type: string
@@ -46,6 +49,15 @@ jobs:
       SpecPath: ${{ steps.saveOutputVars.outputs.SpecPath }}
       MajorVersionCode: ${{ steps.saveOutputVars.outputs.MajorVersionCode }}
       SlotName: ${{ steps.saveOutputVars.outputs.SlotName }}
+    env:
+      ReleaseVersionTmp: "alpha"
+      MajorVersionCode: "v0"
+      AppID:
+      SlotName:
+      ServiceName:
+      ReleaseVersion:
+      ResourceGroup:
+      SpecPath:
     steps:
       - id: getReleaseVersion
         name: Get Release Version and Major Version Code
@@ -58,41 +70,41 @@ jobs:
         run: |
           echo "ServiceName=$${{ inputs.SERVICE_NAME_PROD }}" >> "$GITHUB_ENV"
           echo "ResourceGroup=RG-${{ inputs.RESOURCE_GROUP_PROD }}" >> "$GITHUB_ENV"
-          echo "AppID=${{ env.APP_NAME }}-${{ env.MajorVersionCode }}" >> "$GITHUB_ENV"
+          echo "AppID=${{ inputs.APP_NAME }}-${{ env.MajorVersionCode }}" >> "$GITHUB_ENV"
       - name: Get RG and Service - uat
         if: ${{ env.ReleaseVersionTmp == 'uat' }}
         run: |
           echo "ReleaseVersion=${{ env.ReleaseVersionTmp }}" >> "$GITHUB_ENV"
           echo "ServiceName=$${{ inputs.SERVICE_NAME_DEV }}" >> "$GITHUB_ENV"
           echo "ResourceGroup=RG-${{ inputs.RESOURCE_GROUP_DEV }}" >> "$GITHUB_ENV"
-          echo "AppID=${{ env.APP_NAME }}-${{ env.MajorVersionCode }}" >> "$GITHUB_ENV"
+          echo "AppID=${{ inputs.APP_NAME }}-${{ env.MajorVersionCode }}" >> "$GITHUB_ENV"
       - name: Get RG and Service - dev
         if: ${{ env.ReleaseVersionTmp != '' && env.ReleaseVersionTmp != 'uat' }}
         run: |
           echo "ReleaseVersion=${{ env.ReleaseVersionTmp }}" >> "$GITHUB_ENV"
           echo "ServiceName=$${{ inputs.SERVICE_NAME_DEV }}" >> "$GITHUB_ENV"
           echo "ResourceGroup=RG-${{ inputs.RESOURCE_GROUP_DEV }}" >> "$GITHUB_ENV"
-          echo "AppID=${{ env.APP_NAME }}-${{ env.MajorVersionCode }}-${{ env.ReleaseVersionTmp }}" >> "$GITHUB_ENV"
+          echo "AppID=${{ inputs.APP_NAME }}-${{ env.MajorVersionCode }}-${{ env.ReleaseVersionTmp }}" >> "$GITHUB_ENV"
           
       - name: Get spec path and slot name - Main Version AND (Prod or UAT)
-        if: ${{ env.MajorVersionCode == env.MAIN_SLOT_VERSION_CODE && (env.ReleaseVersionTmp == '' || env.ReleaseVersionTmp == 'uat') }}
+        if: ${{ env.MajorVersionCode == inputs.MAIN_SLOT_VERSION_CODE && (env.ReleaseVersionTmp == '' || env.ReleaseVersionTmp == 'uat') }}
         run: |
-          echo "SpecPath=openapi/${{ env.APP_NAME }}_${{ env.MAIN_SLOT_VERSION_CODE }}.json" >> "$GITHUB_ENV"
+          echo "SpecPath=openapi/${{ inputs.APP_NAME }}_${{ inputs.MAIN_SLOT_VERSION_CODE }}.json" >> "$GITHUB_ENV"
           echo "SlotName=production" >> "$GITHUB_ENV"
       - name: Get spec path and slot name - NOT Main Version AND (Prod or UAT)
-        if: ${{ env.MajorVersionCode != env.MAIN_SLOT_VERSION_CODE && (env.ReleaseVersionTmp == '' || env.ReleaseVersionTmp == 'uat') }}
+        if: ${{ env.MajorVersionCode != inputs.MAIN_SLOT_VERSION_CODE && (env.ReleaseVersionTmp == '' || env.ReleaseVersionTmp == 'uat') }}
         run: |
-          echo "SpecPath=openapi/${{ env.APP_NAME }}_${{ env.MajorVersionCode }}.json" >> "$GITHUB_ENV"
+          echo "SpecPath=openapi/${{ inputs.APP_NAME }}_${{ env.MajorVersionCode }}.json" >> "$GITHUB_ENV"
           echo "SlotName=${{ env.MajorVersionCode }}" >> "$GITHUB_ENV"
       - name: Get spec path and slot name - NOT Prod AND NOT UAT
         if: ${{ env.ReleaseVersionTmp != '' && env.ReleaseVersionTmp != 'uat' }}
         run: |
-          echo "SpecPath=openapi/${{ env.APP_NAME }}_${{ env.MajorVersionCode }}-${{ env.ReleaseVersionTmp }}.json" >> "$GITHUB_ENV"
+          echo "SpecPath=openapi/${{ inputs.APP_NAME }}_${{ env.MajorVersionCode }}-${{ env.ReleaseVersionTmp }}.json" >> "$GITHUB_ENV"
           echo "SlotName=${{ env.MajorVersionCode }}-${{ env.ReleaseVersionTmp }}" >> "$GITHUB_ENV"
       - name: Get spec path - v1 special handling AND (Prod or UAT)
         if: ${{ env.MajorVersionCode == 'v1' && (env.ReleaseVersionTmp == '' || env.ReleaseVersionTmp == 'uat') }}
         run: |
-          echo "SpecPath=openapi/${{ env.APP_NAME }}.json" >> "$GITHUB_ENV"
+          echo "SpecPath=openapi/${{ inputs.APP_NAME }}.json" >> "$GITHUB_ENV"
 
       - id: saveOutputVars
         name: Save the output variables
@@ -156,6 +168,7 @@ jobs:
       SERVICE_NAME: "${{ needs.configure-vars.outputs.ServiceName }}"
       SLOT_NAME: "${{ needs.configure-vars.outputs.SlotName }}"
       SPEC_PATH: "${{ needs.configure-vars.outputs.SpecPath }}"
+      SERVICE_URL: "DEFAULT"
 
     steps:
       - name: Download artifact from build job
@@ -169,12 +182,21 @@ jobs:
           client-id: ${{ secrets.APIM_Client_ID }}
           tenant-id: ${{ secrets.APIM_Tenant_ID }}
           subscription-id: ${{ secrets.APIM_Subscription_ID }}
+      - name: Get service URL
+        run: |
+          $apiList = az apim api list -g ${{ env.RESOURCE_GROUP }} -n ${{ env.SERVICE_NAME }} | Convertfrom-json
+          $filteredList = $apiList | Where-Object name -eq ${{ env.APP_ID }}
+          echo "SERVICE_URL=$filteredList.serviceURL" >> "$GITHUB_ENV"
+
       - name: Deploy to Azure Web App
+        if: ${{ env.SERVICE_URL != 'DEFAULT' }}
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: "${{ env.AZ_APP_NAME }}"
           slot-name: "${{ env.SLOT_NAME }}"
           package: .
+          
       - name: Update APIM APIs
-        run: az apim api import --resource-group "${{ env.RESOURCE_GROUP }}" --service-name "${{ env.SERVICE_NAME }}" --path "${{ env.API_PATH }}" --specification-format OpenApiJson --specification-path "${{ env.SPEC_PATH }}" --api-id "${{ env.APP_ID }}"
+        if: ${{ env.SERVICE_URL != 'DEFAULT' }}
+        run: az apim api import --resource-group "${{ env.RESOURCE_GROUP }}" --service-name "${{ env.SERVICE_NAME }}" --path "${{ env.API_PATH }}" --serivce-url ${{ env.SERVICE_URL }} --specification-format OpenApiJson --specification-path "${{ env.SPEC_PATH }}" --api-id "${{ env.APP_ID }}"
