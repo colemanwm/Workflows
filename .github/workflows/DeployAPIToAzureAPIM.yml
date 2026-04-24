@@ -124,7 +124,7 @@ jobs:
       contents: read #This is required for actions/checkout
     env:
       NUGET_URL: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-
+      SPEC_PATH: ${{ needs.configure-vars.outputs.SpecPath }}
     steps:        
       - uses: actions/checkout@v4
 
@@ -149,6 +149,12 @@ jobs:
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
+
+      - name: Upload OpenAPI artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenAPI
+          path: OpenAPI/${{ env.SPEC_PATH }}
 
   deploy:
     runs-on: windows-latest
@@ -176,6 +182,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+      - name: Download OpenAPI artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: OpenAPI
       
       - name: Login to Azure
         uses: azure/login@v2
