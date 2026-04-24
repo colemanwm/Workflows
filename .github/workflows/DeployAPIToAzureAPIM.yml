@@ -154,7 +154,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: OpenAPI
-          path: OpenAPI/${{ env.SPEC_PATH }}
+          path: ${{ env.SPEC_PATH }}
 
   deploy:
     runs-on: windows-latest
