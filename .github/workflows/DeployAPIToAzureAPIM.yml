@@ -128,6 +128,7 @@ jobs:
     env:
       NUGET_URL: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
       SPEC_PATH: ${{ needs.configure-vars.outputs.SpecPath }}
+      PROJECT_FOLDER: ${{ inputs.PROJECT_FOLDER }}
     steps:        
       - uses: actions/checkout@v4
 
@@ -157,7 +158,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: OpenAPI
-          path: PROJECT_FOLDER/${{ env.SPEC_PATH }}
+          path: ${{ env.PROJECT_FOLDER }}/${{ env.SPEC_PATH }}
 
   deploy:
     runs-on: windows-latest
