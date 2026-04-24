@@ -187,7 +187,8 @@ jobs:
         run: |
           $apiList = az apim api list -g ${{ env.RESOURCE_GROUP }} -n ${{ env.SERVICE_NAME }} | Convertfrom-json
           $filteredList = $apiList | Where-Object name -eq ${{ env.APP_ID }}
-          echo "SERVICE_URL=$filteredList.serviceURL" >> "$GITHUB_ENV"
+          
+          echo "SERVICE_URL=$filteredList.serviceURL" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Deploy to Azure Web App
         if: ${{ env.SERVICE_URL != 'DEFAULT' }}
