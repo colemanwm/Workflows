@@ -69,21 +69,21 @@ jobs:
         if: ${{ env.ReleaseVersionTmp == '' }}
         run: |
           echo "ServiceName=${{ inputs.SERVICE_NAME_PROD }}" >> "$GITHUB_ENV"
-          echo "ResourceGroup=RG-${{ inputs.RESOURCE_GROUP_PROD }}" >> "$GITHUB_ENV"
+          echo "ResourceGroup=${{ inputs.RESOURCE_GROUP_PROD }}" >> "$GITHUB_ENV"
           echo "AppID=${{ inputs.APP_NAME }}-${{ env.MajorVersionCode }}" >> "$GITHUB_ENV"
       - name: Get RG and Service - uat
         if: ${{ env.ReleaseVersionTmp == 'uat' }}
         run: |
           echo "ReleaseVersion=${{ env.ReleaseVersionTmp }}" >> "$GITHUB_ENV"
           echo "ServiceName=${{ inputs.SERVICE_NAME_DEV }}" >> "$GITHUB_ENV"
-          echo "ResourceGroup=RG-${{ inputs.RESOURCE_GROUP_DEV }}" >> "$GITHUB_ENV"
+          echo "ResourceGroup=${{ inputs.RESOURCE_GROUP_DEV }}" >> "$GITHUB_ENV"
           echo "AppID=${{ inputs.APP_NAME }}-${{ env.MajorVersionCode }}" >> "$GITHUB_ENV"
       - name: Get RG and Service - dev
         if: ${{ env.ReleaseVersionTmp != '' && env.ReleaseVersionTmp != 'uat' }}
         run: |
           echo "ReleaseVersion=${{ env.ReleaseVersionTmp }}" >> "$GITHUB_ENV"
           echo "ServiceName=${{ inputs.SERVICE_NAME_DEV }}" >> "$GITHUB_ENV"
-          echo "ResourceGroup=RG-${{ inputs.RESOURCE_GROUP_DEV }}" >> "$GITHUB_ENV"
+          echo "ResourceGroup=${{ inputs.RESOURCE_GROUP_DEV }}" >> "$GITHUB_ENV"
           echo "AppID=${{ inputs.APP_NAME }}-${{ env.MajorVersionCode }}-${{ env.ReleaseVersionTmp }}" >> "$GITHUB_ENV"
           
       - name: Get spec path and slot name - Main Version AND (Prod or UAT)
