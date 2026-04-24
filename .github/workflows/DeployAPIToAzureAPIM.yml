@@ -14,6 +14,9 @@ on:
       MAIN_SLOT_VERSION_CODE:
         required: true
         type: string
+      PROJECT_FOLDER:
+        required: true
+        type: string
       RESOURCE_GROUP_DEV:
         required: true
         type: string
@@ -154,7 +157,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: OpenAPI
-          path: ${{ env.SPEC_PATH }}
+          path: PROJECT_FOLDER/${{ env.SPEC_PATH }}
 
   deploy:
     runs-on: windows-latest
