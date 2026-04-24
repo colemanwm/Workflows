@@ -2,22 +2,25 @@ name: 'Deploy API to Azure APIM'
 on:
   workflow_call:
     inputs:
-      AZ_APP_NAME:
+      API_PATH:
         required: true
         type: string
       APP_NAME:
         required: true
         type: string
-      RESOURCE_GROUP:
+      AZ_APP_NAME:
         required: true
         type: string
-      SERVICE_NAME:
+      RESOURCE_GROUP_DEV:
         required: true
         type: string
-      API_PATH:
+      SERVICE_NAME_DEV:
         required: true
         type: string
-      SLOT_NAME:
+      RESOURCE_GROUP_PROD:
+        required: true
+        type: string
+      SERVICE_NAME_PROD:
         required: true
         type: string
     secrets:
@@ -36,38 +39,71 @@ jobs:
   configure-vars:
     runs-on: ubuntu-latest
     outputs:
-      FormattedCode: ${{ steps.storeVersionCode.outputs.FormattedCode }}
-      SpecPath: ${{ steps.storeSpecPath.outputs.SPEC_PATH }}
-      AppID: ${{ steps.storeAppID.outputs.APP_ID }}
-    env:
-      APP_NAME: ${{ inputs.APP_NAME }}
+      AppID: ${{ steps.saveOutputVars.outputs.AppID }}
+      ReleaseVersion: ${{ steps.saveOutputVars.outputs.ReleaseVersion }}
+      ServiceName: ${{ steps.saveOutputVars.outputs.ServiceName }}
+      ResourceGroup: ${{ steps.saveOutputVars.outputs.ResourceGroup }}
+      SpecPath: ${{ steps.saveOutputVars.outputs.SpecPath }}
+      MajorVersionCode: ${{ steps.saveOutputVars.outputs.MajorVersionCode }}
+      SlotName: ${{ steps.saveOutputVars.outputs.SlotName }}
     steps:
-      - name: Get Version Code (env)
+      - id: getReleaseVersion
+        name: Get Release Version and Major Version Code
         run: |
-          echo "FormattedCode=${{ github.ref_name }}" | sed -e "s#releases/##g" >> "$GITHUB_ENV"
-      - name: Get spec path - non-v1 handling
-        if: ${{ env.FormattedCode != 'v1' }}
+          echo "ReleaseVersionTmp=${{ github.ref_name }}" | sed -E 's/v[0-9]+\.[0-9]+\.[0-9]+-*//gm;t' >> "$GITHUB_ENV"
+          echo "ReleaseVersion=${{ github.ref_name }}"    | sed -E 's/v[0-9]+\.[0-9]+\.[0-9]+-*//gm;t' >> "$GITHUB_ENV"
+          echo "MajorVersionCode=${{ github.ref_name }}"  | sed -E 's/\.[0-9]+\.[0-9]+-*.*//gm;t'      >> "$GITHUB_ENV"
+      - name: Get RG and Service - Prod
+        if: ${{ env.ReleaseVersionTmp == '' }}
         run: |
-          echo "SPEC_PATH=openapi/${{ env.APP_NAME }}_${{ github.ref_name }}.json" >> "$GITHUB_ENV"
-      - name: Get spec path - v1 handling
-        if: ${{ env.FormattedCode == 'v1' }}
+          echo "ServiceName=$${{ inputs.SERVICE_NAME_PROD }}" >> "$GITHUB_ENV"
+          echo "ResourceGroup=RG-${{ inputs.RESOURCE_GROUP_PROD }}" >> "$GITHUB_ENV"
+          echo "AppID=${{ env.APP_NAME }}-${{ env.MajorVersionCode }}" >> "$GITHUB_ENV"
+      - name: Get RG and Service - uat
+        if: ${{ env.ReleaseVersionTmp == 'uat' }}
         run: |
-          echo "SPEC_PATH=openapi/${{ env.APP_NAME }}.json" >> "$GITHUB_ENV"
-      - id: storeVersionCode
-        name: Store Version Code
+          echo "ReleaseVersion=${{ env.ReleaseVersionTmp }}" >> "$GITHUB_ENV"
+          echo "ServiceName=$${{ inputs.SERVICE_NAME_DEV }}" >> "$GITHUB_ENV"
+          echo "ResourceGroup=RG-${{ inputs.RESOURCE_GROUP_DEV }}" >> "$GITHUB_ENV"
+          echo "AppID=${{ env.APP_NAME }}-${{ env.MajorVersionCode }}" >> "$GITHUB_ENV"
+      - name: Get RG and Service - dev
+        if: ${{ env.ReleaseVersionTmp != '' && env.ReleaseVersionTmp != 'uat' }}
         run: |
-          echo "FormattedCode=${{ github.ref_name }}" | sed -e "s#releases/##g" >> "$GITHUB_OUTPUT"
-      - id: storeSpecPath
-        name: Store Spec Path
+          echo "ReleaseVersion=${{ env.ReleaseVersionTmp }}" >> "$GITHUB_ENV"
+          echo "ServiceName=$${{ inputs.SERVICE_NAME_DEV }}" >> "$GITHUB_ENV"
+          echo "ResourceGroup=RG-${{ inputs.RESOURCE_GROUP_DEV }}" >> "$GITHUB_ENV"
+          echo "AppID=${{ env.APP_NAME }}-${{ env.MajorVersionCode }}-${{ env.ReleaseVersionTmp }}" >> "$GITHUB_ENV"
+          
+      - name: Get spec path and slot name - Main Version AND (Prod or UAT)
+        if: ${{ env.MajorVersionCode == env.MAIN_SLOT_VERSION_CODE && (env.ReleaseVersionTmp == '' || env.ReleaseVersionTmp == 'uat') }}
         run: |
-          echo "SPEC_PATH=${{ env.SPEC_PATH }}" >> "$GITHUB_OUTPUT"
-      - id: storeAppID
-        name: Store APP ID
+          echo "SpecPath=openapi/${{ env.APP_NAME }}_${{ env.MAIN_SLOT_VERSION_CODE }}.json" >> "$GITHUB_ENV"
+          echo "SlotName=production" >> "$GITHUB_ENV"
+      - name: Get spec path and slot name - NOT Main Version AND (Prod or UAT)
+        if: ${{ env.MajorVersionCode != env.MAIN_SLOT_VERSION_CODE && (env.ReleaseVersionTmp == '' || env.ReleaseVersionTmp == 'uat') }}
         run: |
-          echo "APP_ID=MoveStar-API-${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
-      - name: Test APIM Output
+          echo "SpecPath=openapi/${{ env.APP_NAME }}_${{ env.MajorVersionCode }}.json" >> "$GITHUB_ENV"
+          echo "SlotName=${{ env.MajorVersionCode }}" >> "$GITHUB_ENV"
+      - name: Get spec path and slot name - NOT Prod AND NOT UAT
+        if: ${{ env.ReleaseVersionTmp != '' && env.ReleaseVersionTmp != 'uat' }}
         run: |
-          echo "az apim api import --resource-group "${{ env.RESOURCE_GROUP }}" --service-name "${{ env.SERVICE_NAME }}" --path "${{ env.API_PATH }}" --specification-format OpenApiJson --specification-path "${{ env.SPEC_PATH }}" --api-id "${{ env.APP_ID }}""
+          echo "SpecPath=openapi/${{ env.APP_NAME }}_${{ env.MajorVersionCode }}-${{ env.ReleaseVersionTmp }}.json" >> "$GITHUB_ENV"
+          echo "SlotName=${{ env.MajorVersionCode }}-${{ env.ReleaseVersionTmp }}" >> "$GITHUB_ENV"
+      - name: Get spec path - v1 special handling AND (Prod or UAT)
+        if: ${{ env.MajorVersionCode == 'v1' && (env.ReleaseVersionTmp == '' || env.ReleaseVersionTmp == 'uat') }}
+        run: |
+          echo "SpecPath=openapi/${{ env.APP_NAME }}.json" >> "$GITHUB_ENV"
+
+      - id: saveOutputVars
+        name: Save the output variables
+        run: |
+          echo "AppID=${{ env.AppID }}" >> "$GITHUB_OUTPUT"
+          echo "ReleaseVersion=${{ env.ReleaseVersion }}" >> "$GITHUB_OUTPUT"
+          echo "ServiceName=${{ env.ServiceName }}" >> "$GITHUB_OUTPUT"
+          echo "ResourceGroup=${{ env.ResourceGroup }}" >> "$GITHUB_OUTPUT"
+          echo "SpecPath=${{ env.SpecPath }}" >> "$GITHUB_OUTPUT"
+          echo "SlotName=${{ env.SlotName }}" >> "$GITHUB_OUTPUT"
+          echo "MajorVersionCode=${{ env.MajorVersionCode }}" >> "$GITHUB_OUTPUT"
       
   build:
     runs-on: windows-latest
@@ -75,7 +111,6 @@ jobs:
     permissions:
       contents: read #This is required for actions/checkout
     env:
-      CONFIG : ${{ inputs.CONFIG }}
       NUGET_URL: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
 
     steps:        
@@ -112,13 +147,15 @@ jobs:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
     env:
-      API_PATH : ${{ inputs.API_PATH }}
-      APP_ID : ${{ needs.configure-vars.outputs.AppID }}
-      APP_NAME: ${{ inputs.AZ_APP_NAME }}
-      RESOURCE_GROUP : ${{ inputs.RESOURCE_GROUP }}
-      SERVICE_NAME : ${{ inputs.SERVICE_NAME }}
-      SLOT_NAME : ${{ inputs.SLOT_NAME }}
-      SPEC_PATH : ${{ needs.configure-vars.outputs.SpecPath }}
+      API_NAME: ${{ inputs.APP_NAME }}
+      API_PATH: ${{ inputs.API_PATH }}
+      APP_ID: "${{ needs.configure-vars.outputs.AppID }}"
+      AZ_APP_NAME: ${{ inputs.AZ_APP_NAME }}
+      RELEASE_VERSION: "${{ needs.configure-vars.outputs.ReleaseVersion }}"
+      RESOURCE_GROUP: "${{ needs.configure-vars.outputs.ResourceGroup }}"
+      SERVICE_NAME: "${{ needs.configure-vars.outputs.ServiceName }}"
+      SLOT_NAME: "${{ needs.configure-vars.outputs.SlotName }}"
+      SPEC_PATH: "${{ needs.configure-vars.outputs.SpecPath }}"
 
     steps:
       - name: Download artifact from build job
@@ -136,7 +173,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "${{ env.APP_NAME }}"
+          app-name: "${{ env.AZ_APP_NAME }}"
           slot-name: "${{ env.SLOT_NAME }}"
           package: .
       - name: Update APIM APIs
