@@ -132,6 +132,12 @@ jobs:
     steps:        
       - uses: actions/checkout@v4
 
+      - name: Upload OpenAPI artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenAPI
+          path: ${{ env.PROJECT_FOLDER }}/${{ env.SPEC_PATH }}
+
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
@@ -153,12 +159,6 @@ jobs:
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
-
-      - name: Upload OpenAPI artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: OpenAPI
-          path: ${{ env.PROJECT_FOLDER }}/${{ env.SPEC_PATH }}
 
   deploy:
     runs-on: windows-latest
