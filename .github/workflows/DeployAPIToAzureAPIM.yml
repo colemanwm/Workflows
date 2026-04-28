@@ -129,6 +129,7 @@ jobs:
       NUGET_URL: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
       SPEC_PATH: ${{ needs.configure-vars.outputs.SpecPath }}
       PROJECT_FOLDER: ${{ inputs.PROJECT_FOLDER }}
+      AZ_APP_NAME: ${{ inputs.AZ_APP_NAME }}
     steps:        
       - uses: actions/checkout@v4
 
@@ -159,6 +160,21 @@ jobs:
         with:
           name: Build-Output
           path: ${{env.DOTNET_ROOT}}/myapp
+
+      - name: Easy Zip Files
+        uses: vimtor/action-zip@v1
+        with:
+          files: "${{env.DOTNET_ROOT}}/myapp"
+          recursive: true
+          dest: ${{ env.AZ_APP_NAME }}.zip
+          
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          title: "${{ env.AZ_APP_NAME }}-Release ${{ github.ref_name }}"
+          prerelease: "${{ contains(github.ref_name,'alpha') || contains(github.ref_name,'beta') || contains(github.ref_name,'-rc') || contains(github.ref_name,'-uat') }}"
+          files: |
+            ${{ env.AZ_APP_NAME }}.zip
 
   deploy:
     runs-on: windows-latest
